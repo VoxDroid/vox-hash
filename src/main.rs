@@ -14,9 +14,9 @@ use regex::Regex;
 #[derive(Parser)]
 #[clap(
     name = "vox-hash",
-    version = "1.1",
+    version = "1.2",
     about = "A CLI tool for SHA1 and MD5 hashing and brute-force hash matching",
-    long_about = "vox-hash supports hashing strings with SHA1/MD5 and brute-force matching of hashes using customizable charsets, wordlists, patterns, and rainbow tables. Use --noverbose to reduce output."
+    long_about = "vox-hash supports hashing strings with SHA1/MD5 and brute-force matching of hashes using customizable charsets, wordlists, patterns, and rainbow tables. Use --noverbose to reduce output. Supports bulk operations with newline-separated input files."
 )]
 struct Cli {
     #[clap(subcommand)]
@@ -37,7 +37,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    #[clap(about = "Hash a string using SHA1 or MD5")]
+    #[clap(about = "Hash a single string using SHA1 or MD5")]
     Enc {
         #[clap(long, value_enum)]
         algo: Algorithm,
@@ -51,7 +51,7 @@ enum Commands {
         #[clap(long)]
         json: bool,
     },
-    #[clap(about = "Brute-force match a hash with constraints, wordlists, or rainbow tables")]
+    #[clap(about = "Brute-force match a single hash with constraints, wordlists, or rainbow tables")]
     Dec {
         #[clap(long)]
         key: String,
@@ -94,6 +94,70 @@ enum Commands {
 
         #[clap(long)]
         json: bool,
+    },
+    #[clap(about = "Hash multiple strings from a file using SHA1 or MD5")]
+    BulkEnc {
+        #[clap(long, value_enum)]
+        algo: Algorithm,
+
+        #[clap(long)]
+        input: String,
+
+        #[clap(long)]
+        output: Option<String>,
+
+        #[clap(long)]
+        json: bool,
+    },
+    #[clap(about = "Brute-force match multiple hashes from a file with constraints, wordlists, or rainbow tables")]
+    BulkDec {
+        #[clap(long)]
+        input: String,
+
+        #[clap(long)]
+        auto: bool,
+
+        #[clap(long, value_enum, default_value = "sha1")]
+        algo: Algorithm,
+
+        #[clap(long, default_value = "20")]
+        conc: usize,
+
+        #[clap(long)]
+        wordlist: Option<String>,
+
+        #[clap(long, default_value = "")]
+        prefix: String,
+
+        #[clap(long, default_value = "")]
+        suffix: String,
+
+        #[clap(long, default_value = "1")]
+        min_len: usize,
+
+        #[clap(long)]
+        length: Option<usize>,
+
+        #[clap(long)]
+        common_patterns: bool,
+
+        #[clap(long)]
+        pattern: Option<String>,
+
+        #[clap(long)]
+        rainbow_table: Option<String>,
+
+        #[clap(long)]
+        output: Option<String>,
+
+        #[clap(long)]
+        json: bool,
+
+        #[clap(long, default_value = "1000")]
+        batch_size: usize,
+
+        #[clap(long)]
+        only_success: bool,
     },
     #[clap(about = "Generate a rainbow table for a charset and length range")]
     GenerateTable {
@@ -341,6 +405,134 @@ fn brute_force_hash(
     result
 }
 
+fn bulk_enc(algo: Algorithm, input_path: &str, output: Option<&str>, json: bool, verbose: bool) -> io::Result<()> {
+    let file = File::open(input_path).map_err(|e| io::Error::new(io::ErrorKind::NotFound, format!("Failed to open input {}: {}", input_path, e)))?;
+    let reader = BufReader::new(file);
+    let lines: Vec<String> = reader.lines().filter_map(|line| line.ok().filter(|s| !s.trim().is_empty())).collect();
+    let total = lines.len() as u64;
+    let pb = if verbose {
+        let pb = ProgressBar::new(total);
+        pb.set_style(ProgressStyle::default_bar().template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})").unwrap());
+        Some(pb)
+    } else {
+        None
+    };
+    let results: Vec<(String, String)> = lines.into_iter().map(|line| {
+        let hash = hash_string(&line, algo.clone());
+        if let Some(pb) = &pb {
+            pb.inc(1);
+        }
+        (line, hash)
+    }).collect();
+    let output_str = if json {
+        json!(results.iter().map(|(input, hash)| json!({ "input": input, "hash": hash })).collect::<Vec<_>>()).to_string()
+    } else {
+        results.iter().map(|(_, hash)| hash.as_str()).collect::<Vec<_>>().join("\n")
+    };
+    if let Some(path) = output {
+        let mut file = OpenOptions::new().write(true).create(true).open(path)?;
+        writeln!(file, "{}", output_str)?;
+    }
+    if verbose {
+        for (input, hash) in results {
+            println!("Input: {}, Hash: {}", input, hash);
+        }
+    } else if output.is_none() {
+        println!("{}", output_str);
+    }
+    if let Some(pb) = pb {
+        pb.finish_with_message("Processing complete");
+    }
+    Ok(())
+}
+
+fn bulk_dec(
+    input_path: &str,
+    auto: bool,
+    algo: Algorithm,
+    conc: usize,
+    wordlist: Option<&str>,
+    prefix: &str,
+    suffix: &str,
+    min_len: usize,
+    max_len: usize,
+    common_patterns: bool,
+    pattern: Option<&str>,
+    rainbow_table: Option<&str>,
+    output: Option<&str>,
+    json: bool,
+    batch_size: usize,
+    only_success: bool,
+    charset: &str,
+    verbose: bool,
+) -> io::Result<()> {
+    let file = File::open(input_path).map_err(|e| io::Error::new(io::ErrorKind::NotFound, format!("Failed to open input {}: {}", input_path, e)))?;
+    let reader = BufReader::new(file);
+    let hashes: Vec<String> = reader.lines().filter_map(|line| line.ok().filter(|s| !s.trim().is_empty())).collect();
+    let total = hashes.len() as u64;
+    let pb = if verbose {
+        let pb = ProgressBar::new(total);
+        pb.set_style(ProgressStyle::default_bar().template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} ({eta})").unwrap());
+        Some(pb)
+    } else {
+        None
+    };
+    let pool = ThreadPoolBuilder::new().num_threads(conc).build().expect("Failed to build thread pool");
+    let results: Vec<(String, String)> = pool.install(|| {
+        hashes.par_chunks(batch_size).flat_map(|batch| {
+            batch.par_iter().filter_map(|hash| {
+                if !validate_hash(hash, algo.clone(), auto) {
+                    if verbose {
+                        eprintln!("Skipping invalid hash: {}", hash);
+                    }
+                    return None;
+                }
+                let mut result = None;
+                if let Some(table_path) = rainbow_table {
+                    result = try_rainbow_table(hash, table_path);
+                }
+                if result.is_none() && common_patterns {
+                    result = try_common_patterns(hash, algo.clone(), verbose);
+                }
+                if result.is_none() {
+                    if let Some(wordlist_path) = wordlist {
+                        result = try_wordlist(hash, algo.clone(), wordlist_path, verbose, conc);
+                    }
+                }
+                if result.is_none() {
+                    result = brute_force_hash(hash, algo.clone(), charset, min_len, max_len, conc, prefix, suffix, pattern, verbose);
+                }
+                if let Some(pb) = &pb {
+                    pb.inc(1);
+                }
+                Some((hash.clone(), result.unwrap_or_else(|| "No match found".to_string())))
+            }).collect::<Vec<_>>()
+        }).collect()
+    });
+    let output_str = if json {
+        json!(results.iter().map(|(hash, result)| json!({ "hash": hash, "result": result })).collect::<Vec<_>>()).to_string()
+    } else {
+        results.iter().filter(|(_, result)| !only_success || result != "No match found").map(|(_, result)| result.as_str()).collect::<Vec<_>>().join("\n")
+    };
+    if let Some(path) = output {
+        let mut file = OpenOptions::new().write(true).create(true).open(path)?;
+        writeln!(file, "{}", output_str)?;
+    }
+    if verbose {
+        let matches = results.iter().filter(|(_, result)| result != "No match found").count();
+        for (hash, result) in &results {
+            println!("Hash: {}, Result: {}", hash, result);
+        }
+        println!("Found {}/{} matches", matches, results.len());
+    } else if output.is_none() {
+        println!("{}", output_str);
+    }
+    if let Some(pb) = pb {
+        pb.finish_with_message("Processing complete");
+    }
+    Ok(())
+}
+
 fn benchmark(algo: Algorithm, iterations: usize) -> f64 {
     let start = Instant::now();
     for _ in 0..iterations {
@@ -462,6 +654,75 @@ fn main() {
                 }
                 None => println!("No match found within constraints"),
             }
+        }
+        Commands::BulkEnc { algo, input, output, json } => {
+            bulk_enc(algo, &input, output.as_deref(), json, verbose).expect("Failed to process bulk encryption");
+        }
+        Commands::BulkDec { input, auto, algo, conc, wordlist, prefix, suffix, min_len, length, common_patterns, pattern, rainbow_table, output, json, batch_size, only_success } => {
+            if min_len > cli.max_len {
+                eprintln!("Error: --min-len must be <= --max-len");
+                std::process::exit(1);
+            }
+            if conc == 0 {
+                eprintln!("Error: --conc must be > 0");
+                std::process::exit(1);
+            }
+            if batch_size == 0 {
+                eprintln!("Error: --batch-size must be > 0");
+                std::process::exit(1);
+            }
+            let min_len = length.unwrap_or(min_len);
+            let max_len = length.unwrap_or(cli.max_len);
+            if verbose {
+                println!("Input file: {}", input);
+                println!("Algorithm: {:?}", algo);
+                println!("Charset: {}", charset);
+                println!("Min length: {}", min_len);
+                println!("Max length: {}", max_len);
+                println!("Concurrent threads: {}", conc);
+                println!("Batch size: {}", batch_size);
+                if let Some(ref wl) = wordlist {
+                    println!("Wordlist: {}", wl);
+                }
+                if !prefix.is_empty() {
+                    println!("Prefix: {}", prefix);
+                }
+                if !suffix.is_empty() {
+                    println!("Suffix: {}", suffix);
+                }
+                if let Some(ref pat) = pattern {
+                    println!("Pattern: {}", pat);
+                }
+                if let Some(ref rt) = rainbow_table {
+                    println!("Rainbow table: {}", rt);
+                }
+                if common_patterns {
+                    println!("Using common patterns: true");
+                }
+                if only_success {
+                    println!("Only output successful matches: true");
+                }
+            }
+            bulk_dec(
+                &input,
+                auto,
+                algo,
+                conc,
+                wordlist.as_deref(),
+                &prefix,
+                &suffix,
+                min_len,
+                max_len,
+                common_patterns,
+                pattern.as_deref(),
+                rainbow_table.as_deref(),
+                output.as_deref(),
+                json,
+                batch_size,
+                only_success,
+                &charset,
+                verbose,
+            ).expect("Failed to process bulk decryption");
         }
         Commands::GenerateTable { output, min_len, max_len, algo } => {
             if min_len > max_len {
