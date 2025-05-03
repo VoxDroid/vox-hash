@@ -1,0 +1,12 @@
+[package]
+name = "vox-hash"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4.41"
+clap = { version = "4.5.37", features = ["derive"] }
+indicatif = "0.17.11"
+md5 = "0.7.0"
+rayon = "1.10.0"
+sha1 = "0.10.6"
