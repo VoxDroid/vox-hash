@@ -1,6 +1,6 @@
-use clap::{Parser, Subcommand, ArgAction};
-use crate::domain::hashing::Algorithm;
 use crate::domain::candidate_generation::CharsetType;
+use crate::domain::hashing::Algorithm;
+use clap::{ArgAction, Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -20,10 +20,19 @@ pub struct Cli {
     #[clap(long, global = true, default_value = "6", help = "Maximum length for brute-force (default: 6)", value_parser = clap::value_parser!(u32).range(1..))]
     pub max_len: u32,
 
-    #[clap(long, global = true, default_value = "alphanumeric", help = "Charset type: alphanumeric, lowercase, uppercase, digits, or custom (default: alphanumeric)")]
+    #[clap(
+        long,
+        global = true,
+        default_value = "alphanumeric",
+        help = "Charset type: alphanumeric, lowercase, uppercase, digits, or custom (default: alphanumeric)"
+    )]
     pub charset_type: CharsetType,
 
-    #[clap(long, global = true, help = "Custom charset string (overrides charset_type if provided)")]
+    #[clap(
+        long,
+        global = true,
+        help = "Custom charset string (overrides charset_type if provided)"
+    )]
     pub charset: Option<String>,
 }
 
@@ -34,7 +43,12 @@ pub enum Commands {
         after_help = "Hashes the provided string and outputs the result. Use --json for JSON format."
     )]
     Enc {
-        #[clap(long, value_enum, default_value = "sha1", help = "Hashing algorithm: sha1 or md5 (default: sha1)")]
+        #[clap(
+            long,
+            value_enum,
+            default_value = "sha1",
+            help = "Hashing algorithm: sha1 or md5 (default: sha1)"
+        )]
         algo: Algorithm,
 
         #[clap(long, help = "String to hash", required = true)]
@@ -54,10 +68,18 @@ pub enum Commands {
         #[clap(long, help = "Hash to decrypt", required = true)]
         key: String,
 
-        #[clap(long, help = "Automatically detect algorithm based on hash length (MD5=32, SHA1=40)")]
+        #[clap(
+            long,
+            help = "Automatically detect algorithm based on hash length (MD5=32, SHA1=40)"
+        )]
         auto: bool,
 
-        #[clap(long, value_enum, default_value = "sha1", help = "Hashing algorithm: sha1 or md5")]
+        #[clap(
+            long,
+            value_enum,
+            default_value = "sha1",
+            help = "Hashing algorithm: sha1 or md5"
+        )]
         algo: Algorithm,
 
         #[clap(long, default_value = "20", help = "Number of concurrent threads (default: 20)", value_parser = clap::value_parser!(u32).range(1..))]
@@ -98,10 +120,19 @@ pub enum Commands {
         after_help = "Reads strings from a file (one per line) and hashes them. Use --json for JSON output."
     )]
     BulkEnc {
-        #[clap(long, value_enum, default_value = "sha1", help = "Hashing algorithm: sha1 or md5")]
+        #[clap(
+            long,
+            value_enum,
+            default_value = "sha1",
+            help = "Hashing algorithm: sha1 or md5"
+        )]
         algo: Algorithm,
 
-        #[clap(long, help = "Input file path containing strings to hash", required = true)]
+        #[clap(
+            long,
+            help = "Input file path containing strings to hash",
+            required = true
+        )]
         input: String,
 
         #[clap(long, help = "Output file path (optional)")]
@@ -115,13 +146,25 @@ pub enum Commands {
         after_help = "Reads hashes from a file (one per line) and attempts to decrypt them. Use --auto for algorithm detection, and --only-success to filter results.\nGlobal options like --max-len, --charset-type, and --charset can also be used."
     )]
     BulkDec {
-        #[clap(long, help = "Input file path containing hashes to decrypt", required = true)]
+        #[clap(
+            long,
+            help = "Input file path containing hashes to decrypt",
+            required = true
+        )]
         input: String,
 
-        #[clap(long, help = "Automatically detect algorithm based on hash length (MD5=32, SHA1=40)")]
+        #[clap(
+            long,
+            help = "Automatically detect algorithm based on hash length (MD5=32, SHA1=40)"
+        )]
         auto: bool,
 
-        #[clap(long, value_enum, default_value = "sha1", help = "Hashing algorithm: sha1 or md5")]
+        #[clap(
+            long,
+            value_enum,
+            default_value = "sha1",
+            help = "Hashing algorithm: sha1 or md5"
+        )]
         algo: Algorithm,
 
         #[clap(long, default_value = "20", help = "Number of concurrent threads (default: 20)", value_parser = clap::value_parser!(u32).range(1..))]
@@ -177,7 +220,12 @@ pub enum Commands {
         #[clap(long, help = "Maximum length of candidates", value_parser = clap::value_parser!(u32).range(1..))]
         max_len: u32,
 
-        #[clap(long, value_enum, default_value = "sha1", help = "Hashing algorithm: sha1 or md5")]
+        #[clap(
+            long,
+            value_enum,
+            default_value = "sha1",
+            help = "Hashing algorithm: sha1 or md5"
+        )]
         algo: Algorithm,
     },
     #[clap(
@@ -185,7 +233,12 @@ pub enum Commands {
         after_help = "Measures hashes per second for the specified algorithm and iteration count."
     )]
     Benchmark {
-        #[clap(long, value_enum, default_value = "sha1", help = "Hashing algorithm: sha1 or md5")]
+        #[clap(
+            long,
+            value_enum,
+            default_value = "sha1",
+            help = "Hashing algorithm: sha1 or md5"
+        )]
         algo: Algorithm,
 
         #[clap(long, default_value = "1000000", help = "Number of iterations (default: 1000000)", value_parser = clap::value_parser!(u32).range(1..))]

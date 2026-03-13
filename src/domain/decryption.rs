@@ -1,45 +1,78 @@
-use crate::domain::hashing::{hash_string, Algorithm};
 use crate::domain::candidate_generation::parse_pattern;
+use crate::domain::hashing::{Algorithm, hash_string};
+use crate::domain::matching::MatchProvider;
+use crate::errors::Result;
 use indicatif::ProgressBar;
-use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
+
+pub struct BruteForceProvider {
+    pub charset: String,
+    pub min_len: u32,
+    pub max_len: u32,
+    pub conc: u32,
+    pub prefix: String,
+    pub suffix: String,
+    pub pattern: Option<String>,
+    pub pb: ProgressBar,
+}
+
+pub struct BruteForceOptions<'a> {
+    pub charset: &'a str,
+    pub min_len: u32,
+    pub max_len: u32,
+    pub conc: u32,
+    pub prefix: &'a str,
+    pub suffix: &'a str,
+    pub pattern: Option<&'a str>,
+    pub verbose: bool,
+}
+
+impl MatchProvider for BruteForceProvider {
+    fn name(&self) -> &str { "brute_force" }
+    fn find_match(&self, target: &str, algo: Algorithm) -> Result<Option<String>> {
+        let opts = BruteForceOptions {
+            charset: &self.charset,
+            min_len: self.min_len,
+            max_len: self.max_len,
+            conc: self.conc,
+            prefix: &self.prefix,
+            suffix: &self.suffix,
+            pattern: self.pattern.as_deref(),
+            verbose: false,
+        };
+        brute_force_hash(target, algo, opts, &self.pb)
+    }
+}
 
 pub fn brute_force_hash(
     target: &str,
     algo: Algorithm,
-    charset: &str,
-    min_len: u32,
-    max_len: u32,
-    conc: u32,
-    prefix: &str,
-    suffix: &str,
-    pattern: Option<&str>,
-    verbose: bool,
+    opts: BruteForceOptions,
     pb: &ProgressBar,
-) -> Option<String> {
+) -> Result<Option<String>> {
     let start_time = Instant::now();
-    let charset_chars: Vec<char> = charset.chars().collect();
-    let _charset_len = charset_chars.len() as u64;
-    let fixed_len = prefix.len() as u32 + suffix.len() as u32;
+    let charset_chars: Vec<char> = opts.charset.chars().collect();
+    let fixed_len = opts.prefix.len() as u32 + opts.suffix.len() as u32;
 
-    if min_len < fixed_len {
-        return None;
+    if opts.min_len < fixed_len {
+        return Ok(None);
     }
-    if min_len > max_len {
-        return None;
+    if opts.min_len > opts.max_len {
+        return Ok(None);
     }
 
-    let (effective_charset, effective_min_len, effective_max_len) = if let Some(pattern) = pattern {
+    let (effective_charset, effective_min_len, effective_max_len) = if let Some(pattern) = opts.pattern {
         let (pat_charset, len) = parse_pattern(pattern)?;
         (pat_charset.chars().collect::<Vec<char>>(), len, len)
     } else {
-        (charset_chars, min_len, max_len)
+        (charset_chars, opts.min_len, opts.max_len)
     };
 
     let found_flag = AtomicBool::new(false);
-    let pool = ThreadPoolBuilder::new().num_threads(conc as usize).build().expect("Failed to build thread pool");
+    let pool = ThreadPoolBuilder::new().num_threads(opts.conc as usize).build().expect("Failed to build thread pool");
     
     let result = pool.install(|| {
         for len in effective_min_len..=effective_max_len {
@@ -47,9 +80,9 @@ pub fn brute_force_hash(
                 break;
             }
             let var_len = len as u64 - fixed_len as u64;
-            if var_len <= 0 {
-                if prefix.len() + suffix.len() == len as usize {
-                   let candidate = format!("{}{}", prefix, suffix);
+            if var_len == 0 {
+                if opts.prefix.len() + opts.suffix.len() == len as usize {
+                   let candidate = format!("{}{}", opts.prefix, opts.suffix);
                    if hash_string(&candidate, algo) == target {
                        found_flag.store(true, Ordering::Relaxed);
                        return Some(candidate);
@@ -77,7 +110,7 @@ pub fn brute_force_hash(
                         temp_n /= c_len;
                     }
                     let middle: String = idx.iter().map(|&i| effective_charset[i]).collect();
-                    let candidate = format!("{}{}{}", prefix, middle, suffix);
+                    let candidate = format!("{}{}{}", opts.prefix, middle, opts.suffix);
                     
                     pb.inc(1);
                     if hash_string(&candidate, algo) == target {
@@ -96,8 +129,8 @@ pub fn brute_force_hash(
         None
     });
 
-    if verbose && result.is_some() {
+    if opts.verbose && result.is_some() {
         println!("Time taken: {:?}", start_time.elapsed());
     }
-    result
+    Ok(result)
 }

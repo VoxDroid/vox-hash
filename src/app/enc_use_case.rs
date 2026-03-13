@@ -1,9 +1,14 @@
-use crate::domain::hashing::{hash_string, Algorithm};
-use crate::infra::file_io::{read_lines, write_to_file};
+use crate::domain::hashing::{Algorithm, hash_string};
 use crate::errors::Result;
+use crate::infra::file_io::{read_lines, write_to_file};
 use serde_json::json;
 
-pub fn execute_enc(algo: Algorithm, input: &str, output: Option<&str>, use_json: bool) -> Result<String> {
+pub fn execute_enc(
+    algo: Algorithm,
+    input: &str,
+    output: Option<&str>,
+    use_json: bool,
+) -> Result<String> {
     let result = hash_string(input, algo);
     let output_str = if use_json {
         json!({ "result": result }).to_string()
@@ -14,13 +19,19 @@ pub fn execute_enc(algo: Algorithm, input: &str, output: Option<&str>, use_json:
     if let Some(path) = output {
         write_to_file(path, &output_str)?;
     }
-    
+
     Ok(result)
 }
 
-pub fn execute_bulk_enc(algo: Algorithm, input_path: &str, output: Option<&str>, use_json: bool) -> Result<Vec<(String, String)>> {
+pub fn execute_bulk_enc(
+    algo: Algorithm,
+    input_path: &str,
+    output: Option<&str>,
+    use_json: bool,
+) -> Result<Vec<(String, String)>> {
     let lines = read_lines(input_path)?;
-    let results: Vec<(String, String)> = lines.into_iter()
+    let results: Vec<(String, String)> = lines
+        .into_iter()
         .map(|line| {
             let hash = hash_string(&line, algo);
             (line, hash)
@@ -28,9 +39,19 @@ pub fn execute_bulk_enc(algo: Algorithm, input_path: &str, output: Option<&str>,
         .collect();
 
     let output_str = if use_json {
-        json!(results.iter().map(|(input, hash)| json!({ "input": input, "hash": hash })).collect::<Vec<_>>()).to_string()
+        json!(
+            results
+                .iter()
+                .map(|(input, hash)| json!({ "input": input, "hash": hash }))
+                .collect::<Vec<_>>()
+        )
+        .to_string()
     } else {
-        results.iter().map(|(_, hash)| hash.as_str()).collect::<Vec<_>>().join("\n")
+        results
+            .iter()
+            .map(|(_, hash)| hash.as_str())
+            .collect::<Vec<_>>()
+            .join("\n")
     };
 
     if let Some(path) = output {

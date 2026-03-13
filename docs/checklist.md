@@ -17,33 +17,33 @@ Last updated: 2026-03-13
 - [x] Move business logic out of `src/main.rs`.
 - [x] Add `config` and typed request/response models.
 - [x] Add typed error model (`thiserror` optional) and unified result handling.
-- [ ] Introduce trait boundaries for hash algorithms and match providers.
-- [ ] Add architecture decision record (ADR) notes.
+- [x] Introduce trait boundaries for hash algorithms and match providers.
+- [x] Add architecture decision record (ADR) notes.
 
 ## 2. CLI Layer Rebuild
 
 - [x] Re-declare all existing commands and flags in modular CLI structs.
-- [ ] Preserve user-facing command names and compatibility aliases if needed.
-- [ ] Centralize argument validation and conflict rules.
+- [x] Preserve user-facing command names and compatibility aliases if needed.
+- [x] Centralize argument validation and conflict rules.
 - [ ] Improve help text examples per command.
-- [ ] Add robust parsing for pattern syntax and lengths.
-- [ ] Define exit code map for success, validation errors, runtime errors.
+- [x] Add robust parsing for pattern syntax and lengths.
+- [x] Define exit code map for success, validation errors, runtime errors.
 
 ## 3. Hashing Core
 
 - [x] Implement hash algorithm abstraction (`enum` or `trait`).
 - [x] Keep `SHA1` and `MD5` parity.
-- [ ] Normalize and validate hash input casing/format.
+- [x] Normalize and validate hash input casing/format.
 - [ ] Add deterministic result formatting.
-- [ ] Design extension point for future algorithms.
+- [x] Design extension point for future algorithms.
 
 ## 4. Candidate Generation Engine
 
 - [x] Rebuild charset providers (`alphanumeric`, `lowercase`, `uppercase`, `digits`, custom).
-- [ ] Implement prefix/suffix-aware candidate builder.
-- [ ] Implement min/max/fixed length controller.
-- [ ] Implement pattern parser and validator with explicit error messages.
-- [ ] Add limits/guards to prevent accidental explosive workloads.
+- [x] Implement prefix/suffix-aware candidate builder.
+- [x] Implement min/max/fixed length controller.
+- [x] Implement pattern parser and validator with explicit error messages.
+- [x] Add limits/guards to prevent accidental explosive workloads.
 
 ## 5. Matching Pipeline
 
@@ -51,8 +51,8 @@ Last updated: 2026-03-13
 - [x] `rainbow_table -> common_patterns -> wordlist -> brute_force`.
 - [ ] Make strategy ordering configurable (optional enhancement).
 - [ ] Add per-strategy timing and counters.
-- [ ] Support early-exit signal across workers.
-- [ ] Ensure deterministic behavior in no-match outcomes.
+- [x] Support early-exit signal across workers.
+- [x] Ensure deterministic behavior in no-match outcomes.
 
 ## 6. Bulk Processing Rebuild
 
@@ -112,11 +112,11 @@ Last updated: 2026-03-13
 
 ## 13. CI/CD and Release Engineering
 
-- [ ] Add CI workflow for:
-- [ ] `cargo fmt --check`
-- [ ] `cargo clippy -- -D warnings`
-- [ ] `cargo test`
-- [ ] `cargo build --release`
+- [x] Add CI workflow for:
+- [x] `cargo fmt --check`
+- [x] `cargo clippy -- -D warnings`
+- [x] `cargo test`
+- [x] `cargo build --release`
 - [ ] Add matrix builds (Linux/macOS/Windows).
 - [ ] Add release workflow for tagged versions.
 - [ ] Add changelog automation or release note template.
