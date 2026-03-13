@@ -4,8 +4,8 @@ Last updated: 2026-03-13
 
 ## 0. Project Setup and Governance
 
-- [ ] Confirm revamp scope and success metrics.
-- [ ] Freeze current behavior expectations from `README.md` and current CLI help.
+- [x] Confirm revamp scope and success metrics.
+- [x] Freeze current behavior expectations from `README.md` and current CLI help.
 - [ ] Define semantic versioning and migration policy.
 - [ ] Set coding standards (fmt, clippy, error handling, docs).
 - [ ] Add/update `CONTRIBUTING.md` revamp section.
@@ -13,16 +13,16 @@ Last updated: 2026-03-13
 
 ## 1. Architecture and Repository Restructure
 
-- [ ] Create modular folder layout (`cli`, `app`, `domain`, `infra`).
-- [ ] Move business logic out of `src/main.rs`.
-- [ ] Add `config` and typed request/response models.
-- [ ] Add typed error model (`thiserror` optional) and unified result handling.
+- [x] Create modular folder layout (`cli`, `app`, `domain`, `infra`).
+- [x] Move business logic out of `src/main.rs`.
+- [x] Add `config` and typed request/response models.
+- [x] Add typed error model (`thiserror` optional) and unified result handling.
 - [ ] Introduce trait boundaries for hash algorithms and match providers.
 - [ ] Add architecture decision record (ADR) notes.
 
 ## 2. CLI Layer Rebuild
 
-- [ ] Re-declare all existing commands and flags in modular CLI structs.
+- [x] Re-declare all existing commands and flags in modular CLI structs.
 - [ ] Preserve user-facing command names and compatibility aliases if needed.
 - [ ] Centralize argument validation and conflict rules.
 - [ ] Improve help text examples per command.
@@ -31,15 +31,15 @@ Last updated: 2026-03-13
 
 ## 3. Hashing Core
 
-- [ ] Implement hash algorithm abstraction (`enum` or `trait`).
-- [ ] Keep `SHA1` and `MD5` parity.
+- [x] Implement hash algorithm abstraction (`enum` or `trait`).
+- [x] Keep `SHA1` and `MD5` parity.
 - [ ] Normalize and validate hash input casing/format.
 - [ ] Add deterministic result formatting.
 - [ ] Design extension point for future algorithms.
 
 ## 4. Candidate Generation Engine
 
-- [ ] Rebuild charset providers (`alphanumeric`, `lowercase`, `uppercase`, `digits`, custom).
+- [x] Rebuild charset providers (`alphanumeric`, `lowercase`, `uppercase`, `digits`, custom).
 - [ ] Implement prefix/suffix-aware candidate builder.
 - [ ] Implement min/max/fixed length controller.
 - [ ] Implement pattern parser and validator with explicit error messages.
@@ -47,8 +47,8 @@ Last updated: 2026-03-13
 
 ## 5. Matching Pipeline
 
-- [ ] Build orchestrator with explicit strategy order:
-- [ ] `rainbow_table -> common_patterns -> wordlist -> brute_force`.
+- [x] Build orchestrator with explicit strategy order:
+- [x] `rainbow_table -> common_patterns -> wordlist -> brute_force`.
 - [ ] Make strategy ordering configurable (optional enhancement).
 - [ ] Add per-strategy timing and counters.
 - [ ] Support early-exit signal across workers.
@@ -56,7 +56,7 @@ Last updated: 2026-03-13
 
 ## 6. Bulk Processing Rebuild
 
-- [ ] Implement streaming line reader for large input files.
+- [x] Implement streaming line reader for large input files.
 - [ ] Implement chunked/batch processing with configurable batch size.
 - [ ] Add memory-safe defaults for large datasets.
 - [ ] Preserve `--only-success` behavior in plain output.
@@ -65,7 +65,7 @@ Last updated: 2026-03-13
 ## 7. Rainbow Table Subsystem
 
 - [ ] Define table file schema and version tag.
-- [ ] Implement table generation with bounded resource checks.
+- [x] Implement table generation with bounded resource checks.
 - [ ] Implement table loading with parse and schema validation.
 - [ ] Consider alternative table storage (optional):
 - [ ] newline-delimited JSON, binary, sqlite, or partitioned files.
@@ -89,7 +89,7 @@ Last updated: 2026-03-13
 
 ## 10. Error Handling and Reliability
 
-- [ ] Replace panics/`expect` with recoverable errors where appropriate.
+- [x] Replace panics/`expect` with recoverable errors where appropriate.
 - [ ] Add contextual error messages for file IO and parsing.
 - [ ] Define retry behavior (if any) for recoverable operations.
 - [ ] Add graceful shutdown/interrupt handling for long tasks.
