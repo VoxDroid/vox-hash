@@ -34,7 +34,30 @@ pub fn validate_cli_args(command: &Commands, config: &RuntimeConfig) -> Result<(
                 )));
             }
             if let Some(p) = pattern {
-                crate::domain::candidate_generation::parse_pattern(p)?;
+                let (pat_charset, pat_len) = crate::domain::candidate_generation::parse_pattern(p)?;
+                let workload = (pat_charset.chars().count() as u128).pow(pat_len);
+                if workload > 1_000_000_000_000 {
+                    return Err(AppError::Config(format!(
+                        "Pattern workload too large: {} candidates. Max allowed is 1,000,000,000,000.",
+                        workload
+                    )));
+                }
+            } else {
+                let charset = crate::domain::candidate_generation::get_charset(
+                    &config.charset_type,
+                    &config.custom_charset,
+                );
+                let c_size = charset.chars().count() as u128;
+                let var_len = config.max_len.saturating_sub(fixed_len);
+                if var_len > 0 {
+                    let workload = c_size.pow(var_len);
+                    if workload > 1_000_000_000_000 {
+                        return Err(AppError::Config(format!(
+                            "Brute force workload too large: {} candidates. Max allowed is 1,000,000,000,000. Try reducing --max-len or using a pattern.",
+                            workload
+                        )));
+                    }
+                }
             }
         }
         Commands::GenerateTable {
@@ -62,7 +85,7 @@ mod tests {
     fn test_validate_cli_args_success() {
         let config = RuntimeConfig {
             verbose: true,
-            max_len: 10,
+            max_len: 6,
             charset_type: CharsetType::Alphanumeric,
             custom_charset: None,
         };

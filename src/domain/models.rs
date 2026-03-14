@@ -7,6 +7,12 @@ pub struct HashResult {
 }
 
 #[derive(Serialize, Debug)]
+pub struct DecryptionResult {
+    pub hash: String,
+    pub result: String,
+}
+
+#[derive(Serialize, Debug)]
 pub struct BulkDecryptionResult {
     pub hash: String,
     pub result: String,

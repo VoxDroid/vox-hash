@@ -9,7 +9,6 @@ use crate::domain::matching::{
 use crate::errors::Result;
 use crate::infra::file_io::{read_lines, write_to_file};
 use indicatif::{ProgressBar, ProgressStyle};
-use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
 use serde_json;
 use std::sync::Arc;
@@ -66,10 +65,7 @@ pub fn execute_bulk_dec(
 
     let orchestrator = Arc::new(orchestrator);
     let charset = get_charset(&config.charset_type, &config.custom_charset);
-    let pool = ThreadPoolBuilder::new()
-        .num_threads(conc as usize)
-        .build()
-        .expect("Failed to build thread pool");
+    let pool = crate::infra::concurrency::build_pool(conc);
 
     let results: Vec<BulkDecryptionResult> = pool.install(|| {
         hashes
@@ -78,6 +74,9 @@ pub fn execute_bulk_dec(
                 batch
                     .par_iter()
                     .filter_map(|hash| {
+                        if crate::infra::shutdown::is_shutdown() {
+                            return None;
+                        }
                         if !validate_hash(hash, algo, auto) {
                             return None;
                         }

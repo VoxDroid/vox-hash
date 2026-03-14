@@ -5,6 +5,7 @@ use crate::domain::hashing::{Algorithm, validate_hash};
 use crate::domain::matching::{
     CommonPatternsProvider, MatchingOrchestrator, RainbowTableProvider, WordlistProvider,
 };
+use crate::domain::models::DecryptionResult;
 use crate::errors::{AppError, Result};
 use indicatif::ProgressBar;
 
@@ -23,7 +24,7 @@ pub fn execute_dec(
     pattern: Option<String>,
     rainbow_table: Option<String>,
     config: &RuntimeConfig,
-) -> Result<Option<String>> {
+) -> Result<Option<DecryptionResult>> {
     if !validate_hash(&key, algo, auto) {
         return Err(AppError::InvalidHash(key));
     }
@@ -50,7 +51,14 @@ pub fn execute_dec(
 
     let charset = get_charset(&config.charset_type, &config.custom_charset);
     let pb = if config.verbose {
-        ProgressBar::new_spinner()
+        let pb = ProgressBar::new_spinner();
+        pb.set_style(
+            indicatif::ProgressStyle::default_spinner()
+                .template("{spinner:.green} [{elapsed_precise}] {msg} {pos} candidates...")
+                .unwrap(),
+        );
+        pb.set_message("Brute-forcing:");
+        pb
     } else {
         ProgressBar::hidden()
     };
@@ -77,5 +85,8 @@ pub fn execute_dec(
         println!("  Total time: {:.2?}", stats.total_time);
     }
 
-    Ok(result.map(|(res, _)| res))
+    Ok(result.map(|(res, _)| DecryptionResult {
+        hash: key,
+        result: res,
+    }))
 }

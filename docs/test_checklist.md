@@ -21,12 +21,12 @@ Create these files/directories:
 - [x] `tests/cli_benchmark.rs`
 - [x] `tests/cli_validation.rs`
 - [ ] `tests/cli_output_json.rs`
-- [ ] `tests/fixtures/words_small.txt`
-- [ ] `tests/fixtures/hashes_small_sha1.txt`
-- [ ] `tests/fixtures/hashes_small_md5.txt`
-- [ ] `tests/fixtures/strings_small.txt`
-- [ ] `tests/fixtures/rainbow_small_sha1.json`
-- [ ] `tests/fixtures/rainbow_invalid.json`
+- [x] `tests/fixtures/words_small.txt`
+- [x] `tests/fixtures/hashes_small_sha1.txt`
+- [x] `tests/fixtures/hashes_small_md5.txt`
+- [x] `tests/fixtures/strings_small.txt`
+- [x] `tests/fixtures/rainbow_small_sha1.json`
+- [x] `tests/fixtures/rainbow_invalid.json`
 
 For modularized core (after refactor), create unit tests under `src/`:
 - [x] `src/domain/hashing.rs` (internal tests)

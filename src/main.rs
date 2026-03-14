@@ -19,6 +19,11 @@ use clap::Parser;
 use std::process::ExitCode;
 
 fn run() -> Result<ExitCode, AppError> {
+    ctrlc::set_handler(move || {
+        crate::infra::shutdown::set_shutdown();
+    })
+    .expect("Error setting Ctrl-C handler");
+
     let cli = Cli::parse();
     let config = RuntimeConfig {
         verbose: !cli.noverbose,
@@ -94,12 +99,13 @@ fn run() -> Result<ExitCode, AppError> {
                 rainbow_table,
                 &config,
             )? {
-                Some(res) => {
+                Some(res_obj) => {
+                    let res = &res_obj.result;
                     if config.verbose {
                         println!("Match found: {}", res);
                     } else if output.is_none() {
                         if json {
-                            println!("{}", serde_json::json!({"result": res}));
+                            println!("{}", serde_json::to_string(&res_obj).unwrap());
                         } else {
                             println!("{}", res);
                         }

@@ -170,39 +170,25 @@ To maintain consistency in the codebase:
 - **CLI**:
   - Use clear, user-friendly error messages.
   - Maintain consistency with existing commands and flags (e.g., `--algo`, `--json`).
-  - Update `--help` messages in `clap` attributes for new features.
+  - Update `--help` messages in `src/cli/args.rs` for new features.
 - **File Structure**:
-  - Keep source code in `src/` (e.g., `main.rs`).
-  - Store sample input files in `examples/` (not tracked in Git).
-  - Place generated outputs (e.g., rainbow tables) in `outputs/` (not tracked).
+  - Source code is organized into modules under `src/`:
+    - `cli/`: Argument parsing and validation.
+    - `app/`: Use case orchestration.
+    - `domain/`: Business logic, hashing, and matching strategies.
+    - `infra/`: I/O, concurrency, and shutdown management.
 - **Error Handling**:
-  - Use `Result` and `Option` for fallible operations.
-  - Provide descriptive error messages with context (e.g., file paths, invalid inputs).
+  - Use `Result` and `AppError`.
+  - Provide descriptive error messages with context using `IoContext`.
 - **Performance**:
-  - Optimize for large datasets (e.g., batch processing, efficient memory usage).
-  - Use `rayon` for parallel tasks where appropriate.
+  - Optimize for large datasets (e.g., batch processing).
+  - Use `crate::infra::concurrency::build_pool` for thread management.
 
 ## Testing
 
 Before submitting a pull request:
 
 - **Manual Testing**:
-  - Test all commands with sample inputs:
-    - `enc`: Hash various strings with SHA1 and MD5.
-    - `dec`: Crack known hashes using wordlists, patterns, and brute-force.
-    - `bulk-enc`: Process a file with multiple strings.
-    - `bulk-dec`: Crack multiple hashes with different configurations.
-    - `generate-table`: Create and verify a small rainbow table.
-    - `benchmark`: Confirm reasonable performance metrics.
-  - Verify JSON output and file writing.
-  - Check progress bars and verbose logs.
-- **Platform Testing**:
-  - Test on at least one platform (e.g., Linux, Windows, macOS).
-  - Verify compatibility with Rust 1.56+.
-- **Edge Cases**:
-  - Test with invalid inputs (e.g., non-existent files, malformed hashes).
-  - Test with large files (e.g., 10,000 hashes) and charsets.
-  - Test with extreme values (e.g., `--max-len 20`, `--conc 100`).
 - **Automation**:
   - Run `cargo test` to execute unit tests (add tests for new functions).
   - Run `cargo fmt --check` to verify formatting.

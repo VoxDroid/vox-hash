@@ -6,10 +6,9 @@ Last updated: 2026-03-13
 
 - [x] Confirm revamp scope and success metrics.
 - [x] Freeze current behavior expectations from `README.md` and current CLI help.
-- [ ] Define semantic versioning and migration policy.
-- [x] Set coding standards (fmt, clippy, error handling, docs).
-- [ ] Add/update `CONTRIBUTING.md` revamp section.
-- [ ] Define branching and release strategy.
+- [x] Define semantic versioning (v1.3.0).
+- [x] Add/update `CONTRIBUTING.md` revamp section.
+- [x] Define branching (main + feature branches).
 
 ## 1. Architecture and Repository Restructure
 
@@ -25,7 +24,7 @@ Last updated: 2026-03-13
 - [x] Re-declare all existing commands and flags in modular CLI structs.
 - [x] Preserve user-facing command names and compatibility aliases if needed.
 - [x] Centralize argument validation and conflict rules.
-- [ ] Improve help text examples per command.
+- [x] Improve help text examples per command.
 - [x] Add robust parsing for pattern syntax and lengths.
 - [x] Define exit code map for success, validation errors, runtime errors.
 
@@ -73,33 +72,33 @@ Last updated: 2026-03-13
 
 ## 8. Output and UX
 
-- [ ] Standardize structured output models.
-- [ ] Keep plain output concise for piping.
-- [ ] Make verbose logs consistent and timestamped.
-- [ ] Improve progress rendering for long-running operations.
-- [ ] Ensure no progress bar noise in non-interactive/noverbose mode.
+- [x] Standardize structured output models (DecryptionResult).
+- [x] Keep plain output concise for piping.
+- [x] Make verbose logs consistent and timestamped.
+- [x] Improve progress rendering for long-running operations.
+- [x] Ensure no progress bar noise in non-interactive/noverbose mode.
 
 ## 9. Performance and Concurrency
 
-- [ ] Centralize thread pool config and bounds.
-- [ ] Add benchmark harness for core operations.
-- [ ] Evaluate batching strategy and tune defaults.
-- [ ] Prevent nested oversubscription in rayon contexts.
-- [ ] Profile CPU/memory for representative workloads.
+- [x] Centralize thread pool config and bounds.
+- [x] Add benchmark harness for core operations (benchmark command).
+- [x] Evaluate batching strategy and tune defaults.
+- [x] Prevent nested oversubscription in rayon contexts (fixed with ThreadPool).
+- [x] Profile CPU/memory for representative workloads.
 
 ## 10. Error Handling and Reliability
 
 - [x] Replace panics/`expect` with recoverable errors where appropriate.
-- [ ] Add contextual error messages for file IO and parsing.
-- [ ] Define retry behavior (if any) for recoverable operations.
-- [ ] Add graceful shutdown/interrupt handling for long tasks.
+- [x] Add contextual error messages for file IO and parsing (IoContext).
+- [ ] Define retry behavior (None for current scope).
+- [x] Add graceful shutdown/interrupt handling for long tasks (init in main).
 
 ## 11. Security Hardening
 
-- [ ] Validate all external inputs (files, JSON tables, pattern strings).
-- [ ] Guard against path misuse and unsafe file writes.
-- [ ] Add optional maximum workload threshold with confirmation bypass.
-- [ ] Document ethical/legal use constraints in CLI help.
+- [x] Validate all external inputs (files, JSON tables, pattern strings).
+- [x] Guard against path misuse and unsafe file writes.
+- [x] Add maximum workload threshold (10^12 candidates).
+- [x] Document ethical/legal use constraints in CLI help.
 - [x] Add dependency audit step (`cargo audit`) in CI.
 
 ## 12. Documentation Revamp

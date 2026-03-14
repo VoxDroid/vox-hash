@@ -4,6 +4,7 @@ use std::io;
 #[derive(Debug)]
 pub enum AppError {
     Io(io::Error),
+    IoContext(String),
     Json(serde_json::Error),
     InvalidHash(String),
     Config(String),
@@ -14,6 +15,7 @@ impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             AppError::Io(e) => write!(f, "IO error: {}", e),
+            AppError::IoContext(m) => write!(f, "{}", m),
             AppError::Json(e) => write!(f, "JSON error: {}", e),
             AppError::InvalidHash(h) => write!(f, "Invalid hash: {}", h),
             AppError::Config(m) => write!(f, "Configuration error: {}", m),

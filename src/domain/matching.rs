@@ -1,7 +1,6 @@
 use crate::domain::hashing::{Algorithm, hash_string};
 use crate::errors::{AppError, Result};
 use crate::infra::file_io::read_lines;
-use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
 use serde_json::Value;
 use std::fs::File;
@@ -57,10 +56,7 @@ impl MatchProvider for WordlistProvider {
         "wordlist"
     }
     fn find_match(&self, target: &str, algo: Algorithm) -> Result<Option<String>> {
-        let pool = ThreadPoolBuilder::new()
-            .num_threads(self.conc as usize)
-            .build()
-            .map_err(|e| AppError::Config(format!("Failed to build thread pool: {}", e)))?;
+        let pool = crate::infra::concurrency::build_pool(self.conc);
 
         let result = pool.install(|| {
             self.words.par_iter().find_map_any(|word| {

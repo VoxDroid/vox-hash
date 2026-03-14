@@ -3,7 +3,6 @@ use crate::domain::hashing::{Algorithm, hash_string};
 use crate::domain::matching::MatchProvider;
 use crate::errors::Result;
 use indicatif::ProgressBar;
-use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
@@ -75,14 +74,11 @@ pub fn brute_force_hash(
         };
 
     let found_flag = AtomicBool::new(false);
-    let pool = ThreadPoolBuilder::new()
-        .num_threads(opts.conc as usize)
-        .build()
-        .expect("Failed to build thread pool");
+    let pool = crate::infra::concurrency::build_pool(opts.conc);
 
     let result = pool.install(|| {
         for len in effective_min_len..=effective_max_len {
-            if found_flag.load(Ordering::Relaxed) {
+            if found_flag.load(Ordering::Relaxed) || crate::infra::shutdown::is_shutdown() {
                 break;
             }
             let var_len = len as u64 - fixed_len as u64;
@@ -100,12 +96,12 @@ pub fn brute_force_hash(
             let batch_size = 1_000_000;
             let mut start: u64 = 0;
             while start < total_for_len {
-                if found_flag.load(Ordering::Relaxed) {
+                if found_flag.load(Ordering::Relaxed) || crate::infra::shutdown::is_shutdown() {
                     break;
                 }
                 let end = (start + batch_size).min(total_for_len);
                 let found = (start..end).into_par_iter().find_map_any(|n| {
-                    if found_flag.load(Ordering::Relaxed) {
+                    if found_flag.load(Ordering::Relaxed) || crate::infra::shutdown::is_shutdown() {
                         return None;
                     }
                     let mut idx = vec![0; var_len as usize];

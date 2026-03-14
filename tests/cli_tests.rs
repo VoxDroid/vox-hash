@@ -40,7 +40,7 @@ fn test_dec_wordlist() {
         .arg("--wordlist")
         .arg(words_path)
         .arg("--max-len")
-        .arg("10")
+        .arg("6")
         .arg("--noverbose");
     cmd.assert()
         .success()
