@@ -3,8 +3,7 @@ use crate::domain::candidate_generation::get_charset;
 use crate::domain::decryption::BruteForceProvider;
 use crate::domain::hashing::{Algorithm, validate_hash};
 use crate::domain::matching::{
-    CommonPatternsProvider, MatchingOrchestrator, RainbowTableProvider,
-    WordlistProvider,
+    CommonPatternsProvider, MatchingOrchestrator, RainbowTableProvider, WordlistProvider,
 };
 use crate::errors::{AppError, Result};
 use indicatif::ProgressBar;
@@ -28,6 +27,11 @@ pub fn execute_dec(
     if !validate_hash(&key, algo, auto) {
         return Err(AppError::InvalidHash(key));
     }
+    let algo = if auto {
+        Algorithm::detect_from_hash(&key).unwrap() // Validated above
+    } else {
+        algo
+    };
     let key = key.trim().to_lowercase();
 
     let mut orchestrator = MatchingOrchestrator::new();

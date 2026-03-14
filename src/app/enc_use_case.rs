@@ -20,7 +20,7 @@ pub fn execute_enc(
         write_to_file(path, &output_str)?;
     }
 
-    Ok(result)
+    Ok(output_str)
 }
 
 pub fn execute_bulk_enc(
@@ -28,7 +28,7 @@ pub fn execute_bulk_enc(
     input_path: &str,
     output: Option<&str>,
     use_json: bool,
-) -> Result<Vec<(String, String)>> {
+) -> Result<String> {
     let lines = read_lines(input_path)?;
     let results: Vec<(String, String)> = lines
         .into_iter()
@@ -58,5 +58,5 @@ pub fn execute_bulk_enc(
         write_to_file(path, &output_str)?;
     }
 
-    Ok(results)
+    Ok(output_str)
 }

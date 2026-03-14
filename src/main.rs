@@ -40,11 +40,11 @@ fn run() -> Result<ExitCode, AppError> {
             output,
             json,
         } => {
-            let hash = execute_enc(algo, &str, output.as_deref(), json)?;
+            let output_str = execute_enc(algo, &str, output.as_deref(), json)?;
             if config.verbose {
-                println!("Hash: {}", hash);
+                println!("Hash: {}", output_str);
             } else if output.is_none() {
-                println!("{}", hash);
+                println!("{}", output_str);
             }
         }
         Commands::BulkEnc {
@@ -53,7 +53,10 @@ fn run() -> Result<ExitCode, AppError> {
             output,
             json,
         } => {
-            execute_bulk_enc(algo, &input, output.as_deref(), json)?;
+            let output_str = execute_bulk_enc(algo, &input, output.as_deref(), json)?;
+            if output.is_none() {
+                println!("{}", output_str);
+            }
         }
         Commands::Dec {
             key,
@@ -131,7 +134,7 @@ fn run() -> Result<ExitCode, AppError> {
                 None => (min_len, config.max_len),
             };
 
-            execute_bulk_dec(
+            let output_str = execute_bulk_dec(
                 &input,
                 auto,
                 algo,
@@ -144,12 +147,15 @@ fn run() -> Result<ExitCode, AppError> {
                 common_patterns,
                 pattern,
                 rainbow_table,
-                output,
+                output.clone(),
                 json,
                 batch_size,
                 only_success,
                 &config,
             )?;
+            if output.is_none() {
+                println!("{}", output_str);
+            }
         }
         Commands::GenerateTable {
             output,

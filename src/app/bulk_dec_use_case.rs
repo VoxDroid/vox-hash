@@ -3,8 +3,8 @@ use crate::domain::candidate_generation::get_charset;
 use crate::domain::decryption::BruteForceProvider;
 use crate::domain::hashing::{Algorithm, validate_hash};
 use crate::domain::matching::{
-    CommonPatternsProvider, MatchingOrchestrator, RainbowTableProvider,
-    WordlistProvider, MatchProvider,
+    CommonPatternsProvider, MatchProvider, MatchingOrchestrator, RainbowTableProvider,
+    WordlistProvider,
 };
 use crate::errors::Result;
 use crate::infra::file_io::{read_lines, write_to_file};
@@ -33,7 +33,7 @@ pub fn execute_bulk_dec(
     batch_size: u32,
     only_success: bool,
     config: &RuntimeConfig,
-) -> Result<Vec<(String, String)>> {
+) -> Result<String> {
     let hashes = read_lines(input_path)?;
     let total = hashes.len() as u64;
 
@@ -79,10 +79,15 @@ pub fn execute_bulk_dec(
                         if !validate_hash(hash, algo, auto) {
                             return None;
                         }
+                        let actual_algo = if auto {
+                            Algorithm::detect_from_hash(hash).unwrap()
+                        } else {
+                            algo
+                        };
                         let hash = hash.trim().to_lowercase();
 
                         let mut result = orchestrator
-                            .find_match(&hash, algo)
+                            .find_match(&hash, actual_algo)
                             .ok()
                             .flatten()
                             .map(|(r, _)| r);
@@ -99,7 +104,7 @@ pub fn execute_bulk_dec(
                                 pattern: pattern.clone(),
                                 pb: pb_bf,
                             };
-                            result = bf_provider.find_match(&hash, algo).ok().flatten();
+                            result = bf_provider.find_match(&hash, actual_algo).ok().flatten();
                         }
 
                         if let Some(ref p) = pb_main {
@@ -141,5 +146,5 @@ pub fn execute_bulk_dec(
         p.finish_with_message("Processing complete");
     }
 
-    Ok(results)
+    Ok(output_str)
 }

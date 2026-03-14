@@ -7,7 +7,7 @@ Last updated: 2026-03-13
 - [x] Confirm revamp scope and success metrics.
 - [x] Freeze current behavior expectations from `README.md` and current CLI help.
 - [ ] Define semantic versioning and migration policy.
-- [ ] Set coding standards (fmt, clippy, error handling, docs).
+- [x] Set coding standards (fmt, clippy, error handling, docs).
 - [ ] Add/update `CONTRIBUTING.md` revamp section.
 - [ ] Define branching and release strategy.
 
@@ -118,7 +118,7 @@ Last updated: 2026-03-13
 - [x] `cargo test`
 - [x] `cargo build --release`
 - [ ] Add matrix builds (Linux/macOS/Windows).
-- [ ] Add release workflow for tagged versions.
+- [x] Add release workflow for tagged versions.
 - [ ] Add changelog automation or release note template.
 
 ## 14. Packaging and Distribution

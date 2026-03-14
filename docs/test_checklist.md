@@ -13,13 +13,13 @@ Last updated: 2026-03-13
 ## 2. Target Test Layout
 
 Create these files/directories:
-- [ ] `tests/cli_enc.rs`
-- [ ] `tests/cli_dec.rs`
-- [ ] `tests/cli_bulk_enc.rs`
-- [ ] `tests/cli_bulk_dec.rs`
-- [ ] `tests/cli_generate_table.rs`
-- [ ] `tests/cli_benchmark.rs`
-- [ ] `tests/cli_validation.rs`
+- [x] `tests/cli_enc.rs`
+- [x] `tests/cli_dec.rs`
+- [x] `tests/cli_bulk_enc.rs`
+- [x] `tests/cli_bulk_dec.rs`
+- [x] `tests/cli_generate_table.rs`
+- [x] `tests/cli_benchmark.rs`
+- [x] `tests/cli_validation.rs`
 - [ ] `tests/cli_output_json.rs`
 - [ ] `tests/fixtures/words_small.txt`
 - [ ] `tests/fixtures/hashes_small_sha1.txt`
@@ -74,38 +74,38 @@ For modularized core (after refactor), create unit tests under `src/`:
 ## 5. Integration/CLI Test Checklist
 
 ### 5.1 `enc`
-- [ ] `enc --algo sha1 --str test` outputs known hash.
-- [ ] `enc --algo md5 --str test` outputs known hash.
-- [ ] `enc --json` returns valid JSON object.
-- [ ] `enc --output <file>` writes expected content.
+- [x] `enc --algo sha1 --str test` outputs known hash.
+- [x] `enc --algo md5 --str test` outputs known hash.
+- [x] `enc --json` returns valid JSON object.
+- [x] `enc --output <file>` writes expected content.
 
 ### 5.2 `dec`
-- [ ] Successful match using `--common-patterns`.
-- [ ] Successful match using `--wordlist`.
-- [ ] Successful match using `--rainbow-table`.
-- [ ] Brute-force match with short constraints.
-- [ ] Invalid hash returns non-zero exit code.
-- [ ] Invalid wordlist path returns clear error.
+- [x] Successful match using `--common-patterns`.
+- [x] Successful match using `--wordlist`.
+- [x] Successful match using `--rainbow-table`.
+- [x] Brute-force match with short constraints.
+- [x] Invalid hash returns non-zero exit code.
+- [x] Invalid wordlist path returns clear error.
 
 ### 5.3 `bulk-enc`
-- [ ] Reads multi-line input and outputs one hash per line.
-- [ ] JSON output returns array with expected entries.
+- [x] Reads multi-line input and outputs one hash per line.
+- [x] JSON output returns array with expected entries.
 - [ ] Empty/blank lines are handled as designed.
 
 ### 5.4 `bulk-dec`
-- [ ] Mixed valid/invalid hashes handled correctly.
-- [ ] `--only-success` filters no-match lines in plain output.
-- [ ] JSON output includes all records with hash and result.
+- [x] Mixed valid/invalid hashes handled correctly.
+- [x] `--only-success` filters no-match lines in plain output.
+- [x] JSON output includes all records with hash and result.
 - [ ] `--batch-size` variations preserve correctness.
 
 ### 5.5 `generate-table`
-- [ ] Generates table file for small length range.
-- [ ] Generated table contains known lookup entries.
+- [x] Generates table file for small length range.
+- [x] Generated table contains known lookup entries.
 - [ ] Invalid min/max length exits with clear error.
 
 ### 5.6 `benchmark`
-- [ ] Command executes successfully with small iteration count.
-- [ ] Output format contains numeric hashes/second metric.
+- [x] Command executes successfully with small iteration count.
+- [x] Output format contains numeric hashes/second metric.
 
 ## 6. Error and Edge Case Test Checklist
 

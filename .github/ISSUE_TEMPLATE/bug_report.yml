@@ -1,7 +1,7 @@
 name: Bug Report
 description: Report a bug or issue with vox-hash
 labels: ["bug", "triage"]
-assignees: ["VoxDroid"]  
+assignees: ["VoxDroid"]
 body:
   - type: markdown
     attributes:

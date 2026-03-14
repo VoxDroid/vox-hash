@@ -34,7 +34,25 @@ pub fn parse_pattern(pattern: &str) -> crate::errors::Result<(String, u32)> {
         ))
     })?;
 
-    let charset = caps[1].to_string();
+    let mut expanded_charset = String::new();
+    let chars: Vec<char> = caps[1].chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        if i + 2 < chars.len() && chars[i + 1] == '-' {
+            let start = chars[i] as u8;
+            let end = chars[i + 2] as u8;
+            if start <= end {
+                for c in start..=end {
+                    expanded_charset.push(c as char);
+                }
+                i += 3;
+                continue;
+            }
+        }
+        expanded_charset.push(chars[i]);
+        i += 1;
+    }
+
     let len: u32 = caps[2]
         .parse()
         .map_err(|_| crate::errors::AppError::Config("Invalid length in pattern".to_string()))?;
@@ -45,5 +63,5 @@ pub fn parse_pattern(pattern: &str) -> crate::errors::Result<(String, u32)> {
         ));
     }
 
-    Ok((charset, len))
+    Ok((expanded_charset, len))
 }

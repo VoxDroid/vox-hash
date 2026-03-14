@@ -1,6 +1,6 @@
 name: Documentation Issue
 description: Report errors or suggest improvements to vox-hash documentation
-labels: ["documentation", "triage"]  
+labels: ["documentation", "triage"]
 body:
   - type: markdown
     attributes:

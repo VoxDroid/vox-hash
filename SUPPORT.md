@@ -84,13 +84,13 @@ Have an idea to improve vox-hash? We’d love to hear it!
 
 ## FAQs
 
-**Q: Why does vox-hash report "Input file does not exist"?**  
+**Q: Why does vox-hash report "Input file does not exist"?**
 A: Ensure the file path is correct and accessible. For example, use `words.txt` in the current directory or provide a full path (e.g., `/path/to/words.txt`). Check file permissions and run `ls` or `dir` to verify.
 
-**Q: Why is brute-forcing slow for large max lengths?**  
+**Q: Why is brute-forcing slow for large max lengths?**
 A: Large `--max-len` values (e.g., >8) or broad charsets (e.g., alphanumeric) create billions of combinations. Use `--wordlist`, `--rainbow-table`, or `--pattern` to narrow the search. Increase `--conc` for more threads if your system supports it.
 
-**Q: How do I create a wordlist or hash file?**  
+**Q: How do I create a wordlist or hash file?**
 A: Create a text file with one entry per line. Example `words.txt`:
 ```
 password
@@ -103,13 +103,13 @@ Example `hashes.txt`:
 d41d8cd98f00b204e9800998ecf8427e
 ```
 
-**Q: Why does the rainbow table generation fail with large lengths?**  
+**Q: Why does the rainbow table generation fail with large lengths?**
 A: Generating tables for `--max-len` > 4 can produce massive files and consume significant memory. Try smaller lengths (e.g., 1-3) or a smaller charset (e.g., `--charset-type digits`). Ensure sufficient disk space.
 
-**Q: How do I optimize brute-force performance?**  
+**Q: How do I optimize brute-force performance?**
 A: Use a wordlist or rainbow table for faster lookups. Specify a pattern (e.g., `[0-9]{4}`) or reduce `--max-len`. Increase `--conc` (e.g., 50) on high-core CPUs, but monitor memory usage. Run on a system with ample RAM and CPU cores.
 
-**Q: Why does JSON output not work as expected?**  
+**Q: Why does JSON output not work as expected?**
 A: Ensure the `--json` flag is used (e.g., `vox-hash enc --str test --json`). If writing to a file, verify the output path is writable. Check for syntax errors in input files for `bulk` commands.
 
 ## Community and Contact

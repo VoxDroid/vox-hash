@@ -31,7 +31,9 @@ pub struct BruteForceOptions<'a> {
 }
 
 impl MatchProvider for BruteForceProvider {
-    fn name(&self) -> &str { "brute_force" }
+    fn name(&self) -> &str {
+        "brute_force"
+    }
     fn find_match(&self, target: &str, algo: Algorithm) -> Result<Option<String>> {
         let opts = BruteForceOptions {
             charset: &self.charset,
@@ -64,16 +66,20 @@ pub fn brute_force_hash(
         return Ok(None);
     }
 
-    let (effective_charset, effective_min_len, effective_max_len) = if let Some(pattern) = opts.pattern {
-        let (pat_charset, len) = parse_pattern(pattern)?;
-        (pat_charset.chars().collect::<Vec<char>>(), len, len)
-    } else {
-        (charset_chars, opts.min_len, opts.max_len)
-    };
+    let (effective_charset, effective_min_len, effective_max_len) =
+        if let Some(pattern) = opts.pattern {
+            let (pat_charset, len) = parse_pattern(pattern)?;
+            (pat_charset.chars().collect::<Vec<char>>(), len, len)
+        } else {
+            (charset_chars, opts.min_len, opts.max_len)
+        };
 
     let found_flag = AtomicBool::new(false);
-    let pool = ThreadPoolBuilder::new().num_threads(opts.conc as usize).build().expect("Failed to build thread pool");
-    
+    let pool = ThreadPoolBuilder::new()
+        .num_threads(opts.conc as usize)
+        .build()
+        .expect("Failed to build thread pool");
+
     let result = pool.install(|| {
         for len in effective_min_len..=effective_max_len {
             if found_flag.load(Ordering::Relaxed) {
@@ -82,11 +88,11 @@ pub fn brute_force_hash(
             let var_len = len as u64 - fixed_len as u64;
             if var_len == 0 {
                 if opts.prefix.len() + opts.suffix.len() == len as usize {
-                   let candidate = format!("{}{}", opts.prefix, opts.suffix);
-                   if hash_string(&candidate, algo) == target {
-                       found_flag.store(true, Ordering::Relaxed);
-                       return Some(candidate);
-                   }
+                    let candidate = format!("{}{}", opts.prefix, opts.suffix);
+                    if hash_string(&candidate, algo) == target {
+                        found_flag.store(true, Ordering::Relaxed);
+                        return Some(candidate);
+                    }
                 }
                 continue;
             }
@@ -111,7 +117,7 @@ pub fn brute_force_hash(
                     }
                     let middle: String = idx.iter().map(|&i| effective_charset[i]).collect();
                     let candidate = format!("{}{}{}", opts.prefix, middle, opts.suffix);
-                    
+
                     pb.inc(1);
                     if hash_string(&candidate, algo) == target {
                         found_flag.store(true, Ordering::Relaxed);

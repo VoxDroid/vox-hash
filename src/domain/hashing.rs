@@ -49,6 +49,17 @@ impl Algorithm {
             Algorithm::Md5 => Box::new(Md5Algo),
         }
     }
+
+    pub fn detect_from_hash(hash: &str) -> Option<Self> {
+        let hash = hash.trim().to_lowercase();
+        if Algorithm::Sha1.get_implementation().validate_format(&hash) {
+            Some(Algorithm::Sha1)
+        } else if Algorithm::Md5.get_implementation().validate_format(&hash) {
+            Some(Algorithm::Md5)
+        } else {
+            None
+        }
+    }
 }
 
 pub fn hash_string(input: &str, algo: Algorithm) -> String {
@@ -56,11 +67,9 @@ pub fn hash_string(input: &str, algo: Algorithm) -> String {
 }
 
 pub fn validate_hash(hash: &str, algo: Algorithm, auto: bool) -> bool {
-    let hash = hash.trim().to_lowercase();
     if auto {
-        Algorithm::Sha1.get_implementation().validate_format(&hash)
-            || Algorithm::Md5.get_implementation().validate_format(&hash)
+        Algorithm::detect_from_hash(hash).is_some()
     } else {
-        algo.get_implementation().validate_format(&hash)
+        algo.get_implementation().validate_format(hash)
     }
 }
