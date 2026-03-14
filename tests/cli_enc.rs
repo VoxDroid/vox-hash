@@ -41,7 +41,7 @@ fn test_enc_json_output() {
         .arg("--json")
         .arg("--noverbose");
     cmd.assert().success().stdout(predicate::str::contains(
-        "\"result\":\"a94a8fe5ccb19ba61c4c0873d391e987982fbbd3\"",
+        "\"hash\":\"a94a8fe5ccb19ba61c4c0873d391e987982fbbd3\"",
     ));
 }
 

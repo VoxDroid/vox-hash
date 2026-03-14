@@ -62,12 +62,18 @@ pub fn execute_generate_table(
         }
     }
 
+    let final_table = json!({
+        "version": "1.0",
+        "algo": format!("{:?}", algo).to_lowercase(),
+        "table": table
+    });
+
     let file = OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
         .open(output)?;
-    serde_json::to_writer(file, &table)?;
+    serde_json::to_writer(file, &final_table)?;
 
     if let Some(p) = pb {
         p.finish_with_message("Table generated");

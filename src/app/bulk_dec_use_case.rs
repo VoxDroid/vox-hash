@@ -11,8 +11,10 @@ use crate::infra::file_io::{read_lines, write_to_file};
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
-use serde_json::json;
+use serde_json;
 use std::sync::Arc;
+
+use crate::domain::models::BulkDecryptionResult;
 
 #[allow(clippy::too_many_arguments)]
 pub fn execute_bulk_dec(
@@ -53,7 +55,7 @@ pub fn execute_bulk_dec(
 
     let mut orchestrator = MatchingOrchestrator::new();
     if let Some(table_path) = rainbow_table {
-        orchestrator.add_provider(Box::new(RainbowTableProvider::new(&table_path)?));
+        orchestrator.add_provider(Box::new(RainbowTableProvider::new(&table_path, algo)?));
     }
     if common_patterns {
         orchestrator.add_provider(Box::new(CommonPatternsProvider));
@@ -69,7 +71,7 @@ pub fn execute_bulk_dec(
         .build()
         .expect("Failed to build thread pool");
 
-    let results: Vec<(String, String)> = pool.install(|| {
+    let results: Vec<BulkDecryptionResult> = pool.install(|| {
         hashes
             .par_chunks(batch_size as usize)
             .flat_map(|batch| {
@@ -111,10 +113,10 @@ pub fn execute_bulk_dec(
                             p.inc(1);
                         }
 
-                        Some((
-                            hash.clone(),
-                            result.unwrap_or_else(|| "No match found".to_string()),
-                        ))
+                        Some(BulkDecryptionResult {
+                            hash: hash.clone(),
+                            result: result.unwrap_or_else(|| "No match found".to_string()),
+                        })
                     })
                     .collect::<Vec<_>>()
             })
@@ -122,18 +124,12 @@ pub fn execute_bulk_dec(
     });
 
     let output_str = if use_json {
-        json!(
-            results
-                .iter()
-                .map(|(hash, result)| json!({ "hash": hash, "result": result }))
-                .collect::<Vec<_>>()
-        )
-        .to_string()
+        serde_json::to_string(&results)?
     } else {
         results
             .iter()
-            .filter(|(_, result)| !only_success || result != "No match found")
-            .map(|(_, result)| result.as_str())
+            .filter(|r| !only_success || r.result != "No match found")
+            .map(|r| r.result.as_str())
             .collect::<Vec<_>>()
             .join("\n")
     };

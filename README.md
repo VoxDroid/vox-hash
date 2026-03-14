@@ -108,6 +108,16 @@ To run vox-hash, ensure you have:
   - Hash files (text, one hash per line).
   - Rainbow table files (JSON format).
 - **Memory**: At least 4GB RAM for brute-forcing; more for large charsets or lengths.
+- **Development Tools**:
+  - `pre-commit`: For automated code quality checks.
+
+## Modular Architecture
+
+vox-hash has been refactored into a modular, layered architecture:
+- **CLI Layer** (`src/cli`): Command-line argument parsing and validation.
+- **App Layer** (`src/app`): Use case orchestration (e.g., `execute_dec`).
+- **Domain Layer** (`src/domain`): Core hashing algorithms, candidate generation, and matching logic.
+- **Infra Layer** (`src/infra`): File I/O and external integrations.
 
 ## Installation
 
@@ -145,11 +155,25 @@ Follow these steps to install and set up vox-hash:
      sudo cp target/release/vox-hash /usr/local/bin/
      ```
 
-6. **Verify Installation**:
+- **Verify Installation**:
    ```bash
    vox-hash --help
    ```
    This should display the CLI help message with available commands and options.
+
+## Development
+
+### Pre-commit Hooks
+We use `pre-commit` to ensure code quality. To set it up:
+1. Install `pre-commit`: `pip install pre-commit`
+2. Install the hooks: `pre-commit install`
+3. Run manually: `pre-commit run --all-files`
+
+### Running Tests
+```bash
+cargo test
+```
+Integration tests are located in the `tests/` directory.
 
 7. **Prepare Input Files** (optional):
    - Create a wordlist file (e.g., `words.txt`):

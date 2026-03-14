@@ -79,7 +79,7 @@ pub struct RainbowTableProvider {
     pub table: serde_json::Map<String, Value>,
 }
 impl RainbowTableProvider {
-    pub fn new(path: &str) -> Result<Self> {
+    pub fn new(path: &str, algo: Algorithm) -> Result<Self> {
         if !Path::new(path).exists() {
             return Err(AppError::NotFound(format!(
                 "Rainbow table file '{}' does not exist",
@@ -88,10 +88,41 @@ impl RainbowTableProvider {
         }
         let file = File::open(path)?;
         let value: Value = serde_json::from_reader(file)?;
-        let table = value
+        let obj = value
             .as_object()
-            .ok_or_else(|| AppError::Config("Rainbow table is not a JSON object".to_string()))?
+            .ok_or_else(|| AppError::Config("Rainbow table is not a JSON object".to_string()))?;
+
+        let version = obj
+            .get("version")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| AppError::Config("Missing version in rainbow table".to_string()))?;
+
+        if version != "1.0" {
+            return Err(AppError::Config(format!(
+                "Unsupported rainbow table version: {}",
+                version
+            )));
+        }
+
+        let table_algo = obj
+            .get("algo")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| AppError::Config("Missing algorithm in rainbow table".to_string()))?;
+
+        let expected_algo_str = format!("{:?}", algo).to_lowercase();
+        if table_algo != expected_algo_str {
+            return Err(AppError::Config(format!(
+                "Rainbow table algorithm mismatch. Expected {}, found {}",
+                expected_algo_str, table_algo
+            )));
+        }
+
+        let table = obj
+            .get("table")
+            .and_then(|v| v.as_object())
+            .ok_or_else(|| AppError::Config("Missing or invalid table object".to_string()))?
             .clone();
+
         Ok(Self { table })
     }
 }
@@ -106,6 +137,13 @@ impl MatchProvider for RainbowTableProvider {
             .and_then(|v| v.as_str().map(String::from)))
     }
 }
+use std::time::{Duration, Instant};
+
+pub struct MatchingStats {
+    pub provider_times: Vec<(String, Duration)>,
+    pub total_time: Duration,
+}
+
 pub struct MatchingOrchestrator {
     pub providers: Vec<Box<dyn MatchProvider>>,
 }
@@ -121,12 +159,42 @@ impl MatchingOrchestrator {
         self.providers.push(provider);
     }
 
-    pub fn find_match(&self, target: &str, algo: Algorithm) -> Result<Option<(String, &str)>> {
+    pub fn find_match_with_stats(
+        &self,
+        target: &str,
+        algo: Algorithm,
+    ) -> Result<(Option<(String, &str)>, MatchingStats)> {
+        let mut provider_times = Vec::new();
+        let total_start = Instant::now();
+
         for provider in &self.providers {
-            if let Some(res) = provider.find_match(target, algo)? {
-                return Ok(Some((res, provider.name())));
+            let start = Instant::now();
+            let res = provider.find_match(target, algo)?;
+            let elapsed = start.elapsed();
+            provider_times.push((provider.name().to_string(), elapsed));
+
+            if let Some(res_str) = res {
+                return Ok((
+                    Some((res_str, provider.name())),
+                    MatchingStats {
+                        provider_times,
+                        total_time: total_start.elapsed(),
+                    },
+                ));
             }
         }
-        Ok(None)
+
+        Ok((
+            None,
+            MatchingStats {
+                provider_times,
+                total_time: total_start.elapsed(),
+            },
+        ))
+    }
+
+    pub fn find_match(&self, target: &str, algo: Algorithm) -> Result<Option<(String, &str)>> {
+        let (res, _) = self.find_match_with_stats(target, algo)?;
+        Ok(res)
     }
 }

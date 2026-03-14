@@ -1,4 +1,5 @@
 use crate::domain::hashing::{Algorithm, hash_string};
+use crate::domain::models::HashResult;
 use crate::errors::Result;
 use crate::infra::file_io::{read_lines, write_to_file};
 use serde_json::json;
@@ -11,7 +12,7 @@ pub fn execute_enc(
 ) -> Result<String> {
     let result = hash_string(input, algo);
     let output_str = if use_json {
-        json!({ "result": result }).to_string()
+        json!({ "hash": result }).to_string()
     } else {
         result.clone()
     };
@@ -30,26 +31,20 @@ pub fn execute_bulk_enc(
     use_json: bool,
 ) -> Result<String> {
     let lines = read_lines(input_path)?;
-    let results: Vec<(String, String)> = lines
+    let results: Vec<HashResult> = lines
         .into_iter()
         .map(|line| {
             let hash = hash_string(&line, algo);
-            (line, hash)
+            HashResult { input: line, hash }
         })
         .collect();
 
     let output_str = if use_json {
-        json!(
-            results
-                .iter()
-                .map(|(input, hash)| json!({ "input": input, "hash": hash }))
-                .collect::<Vec<_>>()
-        )
-        .to_string()
+        serde_json::to_string(&results)?
     } else {
         results
             .iter()
-            .map(|(_, hash)| hash.as_str())
+            .map(|r| r.hash.as_str())
             .collect::<Vec<_>>()
             .join("\n")
     };

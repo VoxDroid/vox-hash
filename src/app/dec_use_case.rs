@@ -37,7 +37,7 @@ pub fn execute_dec(
     let mut orchestrator = MatchingOrchestrator::new();
 
     if let Some(table_path) = rainbow_table {
-        orchestrator.add_provider(Box::new(RainbowTableProvider::new(&table_path)?));
+        orchestrator.add_provider(Box::new(RainbowTableProvider::new(&table_path, algo)?));
     }
 
     if common_patterns {
@@ -66,8 +66,16 @@ pub fn execute_dec(
         pb: pb.clone(),
     }));
 
-    let result = orchestrator.find_match(&key, algo)?;
+    let (result, stats) = orchestrator.find_match_with_stats(&key, algo)?;
     pb.finish_and_clear();
+
+    if config.verbose {
+        println!("Matching stats:");
+        for (name, time) in stats.provider_times {
+            println!("  - {}: {:.2?}", name, time);
+        }
+        println!("  Total time: {:.2?}", stats.total_time);
+    }
 
     Ok(result.map(|(res, _)| res))
 }

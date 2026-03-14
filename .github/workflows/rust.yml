@@ -11,7 +11,10 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
@@ -32,3 +35,12 @@ jobs:
 
     - name: Build Release
       run: cargo build --release --verbose
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install cargo-audit
+      run: cargo install cargo-audit
+    - name: Run audit
+      run: cargo audit

@@ -73,3 +73,56 @@ pub fn validate_hash(hash: &str, algo: Algorithm, auto: bool) -> bool {
         algo.get_implementation().validate_format(hash)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sha1_hash() {
+        let algo = Algorithm::Sha1;
+        assert_eq!(
+            hash_string("test", algo),
+            "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+        );
+        assert_eq!(
+            hash_string("", algo),
+            "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        );
+    }
+
+    #[test]
+    fn test_md5_hash() {
+        let algo = Algorithm::Md5;
+        assert_eq!(
+            hash_string("test", algo),
+            "098f6bcd4621d373cade4e832627b4f6"
+        );
+        assert_eq!(hash_string("", algo), "d41d8cd98f00b204e9800998ecf8427e");
+    }
+
+    #[test]
+    fn test_detect_from_hash() {
+        let sha1_hash = "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3";
+        let md5_hash = "098f6bcd4621d373cade4e832627b4f6";
+        let invalid_hash = "abc";
+
+        assert_eq!(
+            Algorithm::detect_from_hash(sha1_hash),
+            Some(Algorithm::Sha1)
+        );
+        assert_eq!(Algorithm::detect_from_hash(md5_hash), Some(Algorithm::Md5));
+        assert_eq!(Algorithm::detect_from_hash(invalid_hash), None);
+    }
+
+    #[test]
+    fn test_validate_hash() {
+        let sha1_hash = "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3";
+        let md5_hash = "098f6bcd4621d373cade4e832627b4f6";
+
+        assert!(validate_hash(sha1_hash, Algorithm::Sha1, false));
+        assert!(validate_hash(md5_hash, Algorithm::Md5, false));
+        assert!(!validate_hash(sha1_hash, Algorithm::Md5, false));
+        assert!(validate_hash(sha1_hash, Algorithm::Md5, true));
+    }
+}

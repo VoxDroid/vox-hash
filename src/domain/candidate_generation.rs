@@ -65,3 +65,37 @@ pub fn parse_pattern(pattern: &str) -> crate::errors::Result<(String, u32)> {
 
     Ok((expanded_charset, len))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_charset() {
+        assert_eq!(get_charset(&CharsetType::Digits, &None), "0123456789");
+        assert_eq!(
+            get_charset(&CharsetType::Custom, &Some("abc".to_string())),
+            "abc"
+        );
+    }
+
+    #[test]
+    fn test_parse_pattern_simple() {
+        let (charset, len) = parse_pattern("[abc]{3}").unwrap();
+        assert_eq!(charset, "abc");
+        assert_eq!(len, 3);
+    }
+
+    #[test]
+    fn test_parse_pattern_expanded() {
+        let (charset, len) = parse_pattern("[a-c1-3]{5}").unwrap();
+        assert_eq!(charset, "abc123");
+        assert_eq!(len, 5);
+    }
+
+    #[test]
+    fn test_parse_pattern_invalid() {
+        assert!(parse_pattern("abc{3}").is_err());
+        assert!(parse_pattern("[abc]3").is_err());
+    }
+}

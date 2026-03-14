@@ -34,7 +34,7 @@ Last updated: 2026-03-13
 - [x] Implement hash algorithm abstraction (`enum` or `trait`).
 - [x] Keep `SHA1` and `MD5` parity.
 - [x] Normalize and validate hash input casing/format.
-- [ ] Add deterministic result formatting.
+- [x] Add deterministic result formatting.
 - [x] Design extension point for future algorithms.
 
 ## 4. Candidate Generation Engine
@@ -50,26 +50,26 @@ Last updated: 2026-03-13
 - [x] Build orchestrator with explicit strategy order:
 - [x] `rainbow_table -> common_patterns -> wordlist -> brute_force`.
 - [ ] Make strategy ordering configurable (optional enhancement).
-- [ ] Add per-strategy timing and counters.
+- [x] Add per-strategy timing and counters.
 - [x] Support early-exit signal across workers.
 - [x] Ensure deterministic behavior in no-match outcomes.
 
 ## 6. Bulk Processing Rebuild
 
 - [x] Implement streaming line reader for large input files.
-- [ ] Implement chunked/batch processing with configurable batch size.
-- [ ] Add memory-safe defaults for large datasets.
-- [ ] Preserve `--only-success` behavior in plain output.
-- [ ] Ensure JSON output includes all relevant fields per record.
+- [x] Implement chunked/batch processing with configurable batch size.
+- [x] Add memory-safe defaults for large datasets.
+- [x] Preserve `--only-success` behavior in plain output.
+- [x] Ensure JSON output includes all relevant fields per record.
 
 ## 7. Rainbow Table Subsystem
 
-- [ ] Define table file schema and version tag.
+- [x] Define table file schema and version tag.
 - [x] Implement table generation with bounded resource checks.
-- [ ] Implement table loading with parse and schema validation.
+- [x] Implement table loading with parse and schema validation.
 - [ ] Consider alternative table storage (optional):
 - [ ] newline-delimited JSON, binary, sqlite, or partitioned files.
-- [ ] Add corruption/invalid-format error handling.
+- [x] Add corruption/invalid-format error handling.
 
 ## 8. Output and UX
 
@@ -100,7 +100,7 @@ Last updated: 2026-03-13
 - [ ] Guard against path misuse and unsafe file writes.
 - [ ] Add optional maximum workload threshold with confirmation bypass.
 - [ ] Document ethical/legal use constraints in CLI help.
-- [ ] Add dependency audit step (`cargo audit`) in CI.
+- [x] Add dependency audit step (`cargo audit`) in CI.
 
 ## 12. Documentation Revamp
 
@@ -117,7 +117,7 @@ Last updated: 2026-03-13
 - [x] `cargo clippy -- -D warnings`
 - [x] `cargo test`
 - [x] `cargo build --release`
-- [ ] Add matrix builds (Linux/macOS/Windows).
+- [x] Add matrix builds (Linux/macOS/Windows).
 - [x] Add release workflow for tagged versions.
 - [ ] Add changelog automation or release note template.
 

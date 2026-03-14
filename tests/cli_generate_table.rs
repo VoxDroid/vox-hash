@@ -18,6 +18,8 @@ fn test_generate_table_basic() {
     cmd.assert().success();
 
     let contents = fs::read_to_string(output_path).unwrap();
+    assert!(contents.contains("\"version\":\"1.0\""));
+    assert!(contents.contains("\"algo\":\"md5\""));
     assert!(contents.contains("0cc175b9c0f1b6a831c399e269772661")); // "a"
     fs::remove_file(output_path).unwrap();
 }
